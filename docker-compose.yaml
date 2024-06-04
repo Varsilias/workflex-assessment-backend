@@ -1,0 +1,40 @@
+version: '3.9'
+
+services:
+  postgres:
+    container_name: workflex-postgres
+    image: postgres:16.2
+    restart: always
+    env_file:
+      - .env
+    environment:
+      POSTGRES_PASSWORD: $DB_PASSWORD
+      POSTGRES_DB: $DB_NAME
+      POSTGRES_USER: $DB_USER
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+
+    networks:
+      - workflex_network
+    volumes:
+      - $HOME/data/postgresql/workflex:/var/lib/postgresql/data
+    ports:
+      - '$DB_PORT:5432'
+
+  adminer:
+    image: adminer:4.8.1
+    container_name: workflex-adminer
+    depends_on:
+      - postgres
+    networks:
+      - workflex_network
+    ports:
+      - '8082:8080'
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DESIGN: galkaev
+    env_file:
+      - .env
+
+networks:
+  workflex_network:
+    driver: bridge
